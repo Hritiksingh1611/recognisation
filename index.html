@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Information Extraction</title>
+</head>
+<body>
+    <h1>Image Information Extraction</h1>
+    <form id="imageForm" enctype="multipart/form-data">
+        <input type="file" id="imageInput" name="image" accept="image/*">
+        <label for="nameInput">Field to Validate:</label>
+        <input type="text" id="nameInput" name="name_to_validate">
+        <button type="button" onclick="extractInformation()">Extract Information</button>
+    </form>
+    <div id="result"></div>
+
+    <script>
+        function extractInformation() {
+            var formData = new FormData();
+            var imageInput = document.getElementById('imageInput');
+            var documentInput = document.getElementById('documemtInput');
+            var nameInput = document.getElementById('nameInput');
+            formData.append('image', imageInput.files[0]);
+            formData.append('document',documentInput.files[0]);
+            formData.append('name_to_validate', nameInput.value);
+
+            fetch('/extract-information', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                displayResult(data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function displayResult(data) {
+            var resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '';
+
+            if (data.error) {
+                resultDiv.innerText = data.error;
+            } else {
+                var information = JSON.stringify(data.information, null, 2);
+                var validationMessage = data.name_validation_result;
+                resultDiv.innerHTML = '<p>Information Extracted:</p><pre>' + information + '</pre><p>' + validationMessage + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>
